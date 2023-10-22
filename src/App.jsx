@@ -50,7 +50,6 @@ function App() {
     })
     setDirections(results);
   }
-/* */
  
 
   const addStop = () => {
