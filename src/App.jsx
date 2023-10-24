@@ -15,35 +15,89 @@ function App() {
   const [canGetDirections, setCanGetDirections] = useState(true);
   const [directions, setDirections] = useState(null);  
   const [nextId, setNextId] = useState(1);
-  const startPoint = useRef();
-  const endPoint = useRef();
-
   
+  const [startSearch, setStartSearch] = useState('');
+  const [currentStartValidAddress, setCurrentStartValidAddress] = useState('');
+  const [typedValueStart, setTypedValueStart] = useState('');
 
-  const checkAvailability = () => {
-    if (
-      startPoint.current === undefined ||
-      endPoint.current === undefined ||
-      (startPoint.current.value.trim() === '' || endPoint.current.value.trim() === '')
-    ) {
-      setCanGetDirections(true);
-    } else {
-      console.log(startPoint.current.value, endPoint.current.value);
-      setCanGetDirections(false);
+  const [endSearch, setEndSearch] = useState('');
+  const [currentEndValidAddress, setCurrentEndValidAddress] = useState('');
+  const [typedValueEnd, setTypedValueEnd] = useState('');
+
+ 
+function onStartLoad(autocomplete) {
+  setStartSearch(autocomplete);
+}
+
+
+
+
+ function onStartChanged () {
+  if (startSearch != null) {
+   
+      const place = startSearch.getPlace();
+      const formattedAddress = place.formatted_address;
+      setCurrentStartValidAddress(formattedAddress);
+      setTypedValueStart(formattedAddress);
     }
+    
+   else {
+    alert("Please enter text");
   }
   
+}
+
+function onEndLoad(autocomplete) {
+  setEndSearch(autocomplete);
+}
+
+
+
+
+ function onEndChanged () {
+  if (endSearch != null) {
+      const place = endSearch.getPlace();
+      const formattedAddress = place.formatted_address;
+      setCurrentEndValidAddress(formattedAddress);
+      setTypedValueEnd(formattedAddress)
+    }
+    
+   else {
+    alert("Please enter text");
+  }
+  
+}
+
+useEffect(() => {
+    if(currentStartValidAddress !== '' && currentEndValidAddress !== ''){
+      
+      setCanGetDirections(false);
+    }
+    else {
+      setCanGetDirections(true);
+    }
+}, [currentStartValidAddress, currentEndValidAddress])
+
+useEffect(() => {
+    if(typedValueStart === currentStartValidAddress && typedValueEnd === currentEndValidAddress && (currentEndValidAddress !== '' && currentStartValidAddress !== '')){
+      
+      setCanGetDirections(false);
+    }
+    else {
+      setCanGetDirections(true);
+    }
+}, [typedValueStart, typedValueEnd])
+
 
   const getRoute = async () => {
-    console.log("I got called", wayPointsArray);
     const directionService = new google.maps.DirectionsService()
     const filteredArray = wayPointsArray
     .filter(waypoint => waypoint.location !== '') 
     .map(({ location }) => ({ location }));
 
     const results = await directionService.route({
-      origin: startPoint.current.value,
-      destination: endPoint.current.value,
+      origin: currentStartValidAddress,
+      destination: currentEndValidAddress,
       travelMode: google.maps.TravelMode.DRIVING,
       waypoints: filteredArray
 
@@ -77,17 +131,21 @@ function App() {
       <h1 className='text-3xl pt-5
       tablet:text-5xl '>GetThere</h1>
    
-    <Autocomplete>
+    <Autocomplete onPlaceChanged={onStartChanged} onLoad={onStartLoad} >
 
-<InputText ref={startPoint} onBlur={checkAvailability} className='p-2 text-xl
+<InputText className='p-2 text-xl
  sm:text-md
- tablet:text-xl tablet:w-auto tablet:p-6' />
+ tablet:text-xl tablet:w-auto tablet:p-6'
+ onChange={(e) => setTypedValueStart(e.target.value)}
+/>
 </Autocomplete>
-<Autocomplete>
+<Autocomplete onPlaceChanged={onEndChanged} onLoad={onEndLoad}>
 
-<InputText ref={endPoint} onBlur={checkAvailability}  className='p-2 text-xl
+<InputText  className='p-2 text-xl
  sm:text-md
- tablet:text-xl tablet:w-auto tablet:p-6' />
+ tablet:text-xl tablet:w-auto tablet:p-6' 
+ onChange={(e) => setTypedValueEnd(e.target.value)}
+ />
 </Autocomplete>
     {wayPointsArray.map((waypoint) => (
     <span key={waypoint.id}>
