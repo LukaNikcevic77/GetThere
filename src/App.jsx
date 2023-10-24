@@ -89,20 +89,24 @@ useEffect(() => {
 }, [typedValueStart, typedValueEnd])
 
 
+
   const getRoute = async () => {
     const directionService = new google.maps.DirectionsService()
     const filteredArray = wayPointsArray
     .filter(waypoint => waypoint.location !== '') 
     .map(({ location }) => ({ location }));
-
+    
     const results = await directionService.route({
       origin: currentStartValidAddress,
       destination: currentEndValidAddress,
       travelMode: google.maps.TravelMode.DRIVING,
       waypoints: filteredArray
-
+      
     })
-    setDirections(results);
+    
+   const newMap = new google.maps.DirectionsRenderer();
+   newMap.setDirections(results);
+    setDirections(newMap);
   }
  
 
@@ -124,7 +128,7 @@ useEffect(() => {
     <div className='bg-slate-500 h-full desktop:flex'>
 
     <GoogleMap zoom={10} center={{lat: 55, lng: 35}} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
-      {directions && <DirectionsRenderer directions={directions}/>}
+      {directions !== null && <DirectionsRenderer directions={directions.directions}/>}
     </GoogleMap>
     <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
     desktop:h-full desktop:w-2/5'>
