@@ -96,17 +96,36 @@ useEffect(() => {
     .filter(waypoint => waypoint.location !== '') 
     .map(({ location }) => ({ location }));
     
-    const results = await directionService.route({
-      origin: currentStartValidAddress,
-      destination: currentEndValidAddress,
-      travelMode: google.maps.TravelMode.DRIVING,
-      waypoints: filteredArray
-      
-    })
-    
-   const newMap = new google.maps.DirectionsRenderer();
+    try {
+
+      const results = await directionService.route({
+        origin: currentStartValidAddress,
+        destination: currentEndValidAddress,
+        travelMode: google.maps.TravelMode.DRIVING,
+        waypoints: filteredArray
+        
+      })
+      const newMap = new google.maps.DirectionsRenderer();
    newMap.setDirections(results);
     setDirections(newMap);
+    }
+    catch(error) {
+      console.log(error.message);
+      switch(error.message){
+        case "DIRECTIONS_ROUTE: ZERO_RESULTS: No route could be found between the origin and destination.":
+          console.log("Nemoguce je naci rutu na odabran nacin");
+          break;
+        case "DIRECTIONS_ROUTE: NOT_FOUND: At least one of the origin, destination, or waypoints could not be geocoded.":
+          console.log("Provjerite unose u polja");
+          break;
+        default: 
+          console.log("Lose mapirana greska");
+          break;
+
+      }
+    }
+    
+   
   }
  
 
