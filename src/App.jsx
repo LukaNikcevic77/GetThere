@@ -1,16 +1,22 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/themes/tailwind-light/theme.css";
 import LocationInput from './components/LocationInput';
 import { Button } from 'primereact/button';
-import { GoogleMap, useLoadScript, Marker, Autocomplete, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Autocomplete, DirectionsRenderer, useGoogleMap, MapContext, DirectionsService } from '@react-google-maps/api';
+import {MAP} from 'react-google-maps/lib/constants';
 import { InputText } from 'primereact/inputtext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function App() {
 
   const {isLoaded} = useLoadScript({
     googleMapsApiKey: 'AIzaSyBBe0NIpQxuhr2_ObZ0bARcHT_4lRHJApE',
     libraries: ['places']
   })
+
+  const directionsRendererRef = useRef();
+
   const [wayPointsArray, setWayPointsArray] = useState([]);
   const [canGetDirections, setCanGetDirections] = useState(true);
   const [directions, setDirections] = useState(null);  
@@ -23,8 +29,27 @@ function App() {
   const [endSearch, setEndSearch] = useState('');
   const [currentEndValidAddress, setCurrentEndValidAddress] = useState('');
   const [typedValueEnd, setTypedValueEnd] = useState('');
+  const [msgSettings, setMsgSettings] = useState([]);
 
- 
+const [mapReference, setMapReference] = useState(null);
+
+
+
+
+  function notifyText() {
+    switch(msgSettings[2])  {
+      case "error":
+        toast.error(msgSettings[0], msgSettings[1]);
+        break;
+      case "warning":
+        toast.warn(msgSettings[0], msgSettings[1]);
+        break;
+        default:
+          break;
+
+    }
+  }
+
 function onStartLoad(autocomplete) {
   setStartSearch(autocomplete);
 }
@@ -88,10 +113,19 @@ useEffect(() => {
     }
 }, [typedValueStart, typedValueEnd])
 
+useEffect(() => {
+  if(msgSettings.length > 0){
+
+    notifyText();
+  }
+}, [msgSettings])
+
+
 
 
   const getRoute = async () => {
     const directionService = new google.maps.DirectionsService()
+
     const filteredArray = wayPointsArray
     .filter(waypoint => waypoint.location !== '') 
     .map(({ location }) => ({ location }));
@@ -108,21 +142,43 @@ useEffect(() => {
       const newMap = new google.maps.DirectionsRenderer();
    newMap.setDirections(results);
     setDirections(newMap);
-    }
+  }
     catch(error) {
       console.log(error.message);
       switch(error.message){
         case "DIRECTIONS_ROUTE: ZERO_RESULTS: No route could be found between the origin and destination.":
           console.log("Nemoguce je naci rutu na odabran nacin");
+          setMsgSettings(['Nemoguce je naci rutu na odabran nacin', {
+            position: "top-center",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            }, "error"])
+            
           break;
         case "DIRECTIONS_ROUTE: NOT_FOUND: At least one of the origin, destination, or waypoints could not be geocoded.":
           console.log("Provjerite unose u polja");
+          setMsgSettings(['Provjerite unose u polja', {
+            position: "top-center",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            }, "warning"])
           break;
         default: 
           console.log("Lose mapirana greska");
           break;
 
       }
+      
     }
     
    
@@ -140,13 +196,27 @@ useEffect(() => {
     setWayPointsArray(updatedArray);
   }
 
+  
+  
+
    return(
     <>
     
     {isLoaded &&
     <div className='bg-slate-500 h-full desktop:flex'>
-
-    <GoogleMap zoom={10} center={{lat: 55, lng: 35}} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
+      <ToastContainer
+position="top-center"
+autoClose={2000}
+hideProgressBar={false}
+newestOnTop={false}
+closeOnClick
+rtl={false}
+pauseOnFocusLoss
+draggable
+pauseOnHover
+theme="dark"
+/>
+<GoogleMap zoom={10} center={{lat: 55, lng: 35}} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
       {directions !== null && <DirectionsRenderer directions={directions.directions}/>}
     </GoogleMap>
     <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
@@ -155,7 +225,6 @@ useEffect(() => {
       tablet:text-5xl '>GetThere</h1>
    
     <Autocomplete onPlaceChanged={onStartChanged} onLoad={onStartLoad} >
-
 <InputText className='p-2 text-xl
  sm:text-md
  tablet:text-xl tablet:w-auto tablet:p-6'
