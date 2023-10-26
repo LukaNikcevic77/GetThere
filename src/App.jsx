@@ -3,16 +3,18 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/themes/tailwind-light/theme.css";
 import LocationInput from './components/LocationInput';
 import { Button } from 'primereact/button';
-import { GoogleMap, useLoadScript, Autocomplete, DirectionsRenderer, useGoogleMap, MapContext, DirectionsService } from '@react-google-maps/api';
-import {MAP} from 'react-google-maps/lib/constants';
+import { GoogleMap, useLoadScript, Autocomplete, DirectionsRenderer} from '@react-google-maps/api';
 import { InputText } from 'primereact/inputtext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+  const googleLibaries = ['places']
+
 function App() {
 
   const {isLoaded} = useLoadScript({
     googleMapsApiKey: 'AIzaSyBBe0NIpQxuhr2_ObZ0bARcHT_4lRHJApE',
-    libraries: ['places']
+    libraries: googleLibaries
   })
 
   const directionsRendererRef = useRef();
@@ -31,8 +33,8 @@ function App() {
   const [typedValueEnd, setTypedValueEnd] = useState('');
   const [msgSettings, setMsgSettings] = useState([]);
 
-const [mapReference, setMapReference] = useState(null);
-
+const mapReference = useRef(null);
+const direcitonsRef = useRef(null);
 
 
 
@@ -124,14 +126,14 @@ useEffect(() => {
 
 
   const getRoute = async () => {
+    const direcitonsReferenta = new google.maps.DirectionsRenderer();
     const directionService = new google.maps.DirectionsService()
-
     const filteredArray = wayPointsArray
     .filter(waypoint => waypoint.location !== '') 
     .map(({ location }) => ({ location }));
     
     try {
-
+      
       const results = await directionService.route({
         origin: currentStartValidAddress,
         destination: currentEndValidAddress,
@@ -139,15 +141,27 @@ useEffect(() => {
         waypoints: filteredArray
         
       })
-      const newMap = new google.maps.DirectionsRenderer();
-   newMap.setDirections(results);
-    setDirections(newMap);
+      const newMap = new google.maps.Map(mapReference.current.mapRef, {
+        center: {lat: 55, lng: 35},
+         mapContainerClassName: 'h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'
+        }
+
+        )
+        direcitonsReferenta.setDirections(results);
+        direcitonsReferenta.setMap(newMap);
+
+      direcitonsRef.current.context = newMap;
+      direcitonsRef.current = direcitonsReferenta;
+
+      
+      
+    setDirections(results);
   }
     catch(error) {
       console.log(error.message);
       switch(error.message){
         case "DIRECTIONS_ROUTE: ZERO_RESULTS: No route could be found between the origin and destination.":
-          console.log("Nemoguce je naci rutu na odabran nacin");
+          
           setMsgSettings(['Nemoguce je naci rutu na odabran nacin', {
             position: "top-center",
             autoClose: 2000,
@@ -161,7 +175,7 @@ useEffect(() => {
             
           break;
         case "DIRECTIONS_ROUTE: NOT_FOUND: At least one of the origin, destination, or waypoints could not be geocoded.":
-          console.log("Provjerite unose u polja");
+         
           setMsgSettings(['Provjerite unose u polja', {
             position: "top-center",
             autoClose: 2000,
@@ -174,7 +188,7 @@ useEffect(() => {
             }, "warning"])
           break;
         default: 
-          console.log("Lose mapirana greska");
+          
           break;
 
       }
@@ -216,8 +230,8 @@ draggable
 pauseOnHover
 theme="dark"
 />
-<GoogleMap zoom={10} center={{lat: 55, lng: 35}} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
-      {directions !== null && <DirectionsRenderer directions={directions.directions}/>}
+<GoogleMap ref={mapReference} zoom={10} center={{lat: 55, lng: 35}} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
+      {directions !== null && <DirectionsRenderer ref={direcitonsRef} directions={directions}/>}
     </GoogleMap>
     <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
     desktop:h-full desktop:w-2/5'>
@@ -257,7 +271,7 @@ theme="dark"
      md:mt-20 md:-mt-0
      tablet:text-4xl tablet:py-10' 
      disabled={canGetDirections} onClick={getRoute} />     
- 
+    
     </div>
     </div>
     
