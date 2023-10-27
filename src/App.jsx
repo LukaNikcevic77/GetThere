@@ -3,10 +3,11 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/themes/tailwind-light/theme.css";
 import LocationInput from './components/LocationInput';
 import { Button } from 'primereact/button';
-import { GoogleMap, useLoadScript, Autocomplete, DirectionsRenderer} from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Autocomplete, DirectionsRenderer, Marker} from '@react-google-maps/api';
 import { InputText } from 'primereact/inputtext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { getGeocode, getLatLng } from 'use-places-autocomplete';
 
   const googleLibaries = ['places']
 
@@ -23,7 +24,8 @@ function App() {
   const [canGetDirections, setCanGetDirections] = useState(true);
   const [directions, setDirections] = useState(null);  
   const [nextId, setNextId] = useState(1);
-  
+  const [center, setCenter] = useState({lat: 42.7804735, lng: 18.9561661})
+
   const [startSearch, setStartSearch] = useState('');
   const [currentStartValidAddress, setCurrentStartValidAddress] = useState('');
   const [typedValueStart, setTypedValueStart] = useState('');
@@ -35,8 +37,9 @@ function App() {
 
 const mapReference = useRef(null);
 const direcitonsRef = useRef(null);
-
-
+const [markers, setMarkers] = useState([]);
+const [currentStartAddressMarker, setCurrentStartAddressMarker] = useState(null);
+const [currentEndAddressMarker, setCurrentEndAddresMarker] = useState(null);
 
   function notifyText() {
     switch(msgSettings[2])  {
@@ -122,6 +125,69 @@ useEffect(() => {
   }
 }, [msgSettings])
 
+useEffect(()=> {
+  const updateMarkers = async () => {
+    const newMarkers = await Promise.all(wayPointsArray.map((location) => getLocationGeocode(location.location)));
+    setMarkers(newMarkers);
+  };
+  updateMarkers();
+ 
+  
+}, [wayPointsArray])
+
+useEffect(()=> {
+  if(markers.length > 0){
+
+    setCenter(markers[markers.length - 1]);
+  }
+ 
+  
+}, [markers])
+useEffect(()=> {
+  if(currentStartValidAddress !== '' ){
+    
+    const getGeocodedValue = async () => {
+      const results = await getLocationGeocode(currentStartValidAddress);
+      return results;
+    }
+  
+    const setCenterFromGeocode = async () => {
+      const center = await getGeocodedValue();
+      console.log(center); // You can see the value in the console
+      if (center !== null && center !== undefined) {
+        setCenter(center);
+        setCurrentStartAddressMarker(center);
+      }
+    }
+  
+    setCenterFromGeocode();
+  }
+  
+  
+  
+}, [currentStartValidAddress])
+
+useEffect(()=> {
+  if(currentEndValidAddress !== ''){
+    const getGeocodedValue = async () => {
+      const results = await getLocationGeocode(currentEndValidAddress);
+      return results;
+    }
+  
+    const setCenterFromGeocode = async () => {
+      const center = await getGeocodedValue();
+      console.log(center); // You can see the value in the console
+      if (center !== null && center !== undefined) {
+        setCenter(center);
+        setCurrentEndAddresMarker(center);
+      }
+    }
+  
+    setCenterFromGeocode();
+  }
+ 
+  
+}, [currentEndValidAddress])
 
 
 
@@ -149,12 +215,12 @@ useEffect(() => {
         )
         direcitonsReferenta.setDirections(results);
         direcitonsReferenta.setMap(newMap);
-
+      
       direcitonsRef.current.context = newMap;
       direcitonsRef.current = direcitonsReferenta;
 
-      
-      
+    
+    setCenter(currentStartAddressMarker);
     setDirections(results);
   }
     catch(error) {
@@ -197,7 +263,14 @@ useEffect(() => {
     
    
   }
- 
+  
+  const getLocationGeocode = async(a) => {
+    console.log(a);
+      const geocodeResults = await getGeocode({address: a});
+      const {lat, lng} = await getLatLng(geocodeResults[0]);
+      console.log(lat, lng);
+      return {lat, lng};
+  }
 
   const addStop = () => {
     const newWaypoint = { id: nextId, location: '', stopover: true };
@@ -230,8 +303,16 @@ draggable
 pauseOnHover
 theme="dark"
 />
-<GoogleMap ref={mapReference} zoom={10} center={{lat: 55, lng: 35}} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
-      {directions !== null && <DirectionsRenderer ref={direcitonsRef} directions={directions}/>}
+
+<GoogleMap ref={mapReference} zoom={10} center={center} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
+      {directions !== null && <DirectionsRenderer ref={direcitonsRef}/>}
+      {markers.map((position, index) => (
+        <Marker key={index} position={position} />
+        
+      ))}
+      {currentStartAddressMarker && <Marker position={currentStartAddressMarker}/>}
+      {currentEndAddressMarker && <Marker position={currentEndAddressMarker}/>}
+
     </GoogleMap>
     <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
     desktop:h-full desktop:w-2/5'>
