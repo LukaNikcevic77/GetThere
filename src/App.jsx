@@ -162,10 +162,10 @@ useEffect(()=> {
     }
   
     setCenterFromGeocode();
-    
   }
- 
-
+  
+  
+  
 }, [currentStartValidAddress])
 
 useEffect(()=> {
@@ -186,6 +186,7 @@ useEffect(()=> {
   
     setCenterFromGeocode();
   }
+ 
   
 }, [currentEndValidAddress])
 
@@ -213,23 +214,15 @@ useEffect(()=> {
         }
 
         )
-        setDirections(results);
         direcitonsReferenta.setDirections(results);
         direcitonsReferenta.setMap(newMap);
-      console.log(directions.routes, results, "AAA");
+      
       direcitonsRef.current.context = newMap;
       direcitonsRef.current = direcitonsReferenta;
-      results.routes[0].legs.map((leg) => {
-       console.log(leg);
-          console.log(leg.step.instructions); // This will print each step's instruction
-          console.log(leg.step.distance.text); // This will print the distance for the step
-        
-      });
 
     
     setCenter(currentStartAddressMarker);
-    console.log(directions);
-    console.log(mapReference.current.mapRef)
+    setDirections(results);
   }
     catch(error) {
       console.log(error.message);
@@ -273,16 +266,13 @@ useEffect(()=> {
   }
   
   const getLocationGeocode = async(a) => {
-    
-    console.log(a, direcitonsRef, directions, mapReference);
+    console.log(a);
       const geocodeResults = await getGeocode({address: a});
       const {lat, lng} = await getLatLng(geocodeResults[0]);
       console.log(lat, lng);
       return {lat, lng};
   }
 
-  
-  
   const addStop = () => {
     const newWaypoint = { id: nextId, location: '', stopover: true };
     setWayPointsArray([...wayPointsArray, newWaypoint]);
@@ -292,15 +282,15 @@ useEffect(()=> {
   const removeStop = (id) => {
     const updatedArray = wayPointsArray.filter(waypoint => waypoint.id !== id);
     setWayPointsArray(updatedArray);
-    /////////
   }
 
   
   
 
-return (
-  <> 
-  {isLoaded &&
+   return(
+    <>
+    
+    {isLoaded &&
     <div className='bg-slate-500 h-full desktop:flex'>
       <ToastContainer
 position="top-center"
@@ -316,7 +306,9 @@ theme="dark"
 />
 
 <GoogleMap ref={mapReference} zoom={10} center={center} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
+
 {directions !== null && <DirectionsRenderer ref={direcitonsRef}/>}
+
       {markers.map((position, index) => (
         <Marker key={index} position={position} />
         
@@ -324,17 +316,19 @@ theme="dark"
       {currentStartAddressMarker && <Marker position={currentStartAddressMarker}/>}
       {currentEndAddressMarker && <Marker position={currentEndAddressMarker}/>}
 
+    
 
-
-    </GoogleMap>
+</GoogleMap>
     
 
     <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
     desktop:h-full desktop:w-2/5'>
       <h1 className='text-3xl pt-5
       tablet:text-5xl '>GetThere</h1>
+
    {directions === null ? (
     <>
+
     <Autocomplete onPlaceChanged={onStartChanged} onLoad={onStartLoad} >
 <InputText className='p-2 text-xl
  sm:text-md
