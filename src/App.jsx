@@ -8,6 +8,7 @@ import { InputText } from 'primereact/inputtext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getGeocode, getLatLng } from 'use-places-autocomplete';
+import 'primeicons/primeicons.css';
 
   const googleLibaries = ['places']
 
@@ -305,7 +306,9 @@ theme="dark"
 />
 
 <GoogleMap ref={mapReference} zoom={10} center={center} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
-      {directions !== null && <DirectionsRenderer ref={direcitonsRef}/>}
+
+{directions !== null && <DirectionsRenderer ref={direcitonsRef}/>}
+
       {markers.map((position, index) => (
         <Marker key={index} position={position} />
         
@@ -313,12 +316,19 @@ theme="dark"
       {currentStartAddressMarker && <Marker position={currentStartAddressMarker}/>}
       {currentEndAddressMarker && <Marker position={currentEndAddressMarker}/>}
 
-    </GoogleMap>
+    
+
+</GoogleMap>
+    
+
     <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
     desktop:h-full desktop:w-2/5'>
       <h1 className='text-3xl pt-5
       tablet:text-5xl '>GetThere</h1>
-   
+
+   {directions === null ? (
+    <>
+
     <Autocomplete onPlaceChanged={onStartChanged} onLoad={onStartLoad} >
 <InputText className='p-2 text-xl
  sm:text-md
@@ -353,13 +363,66 @@ theme="dark"
      tablet:text-4xl tablet:py-10' 
      disabled={canGetDirections} onClick={getRoute} />     
     
-    </div>
-    </div>
-    
-}
+    </> )
+    : 
+    (
+    <>
+    <Button label="New directions" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xs -ml-20 
+    sm:-mt-1 
+    tablet:text-3xl tablet:py-8' 
+    onClick={() => window.location.reload()} /> 
+    {directions.routes &&
+  directions.routes[0].legs.map((step, stepIndex) =>
+    step.steps.map((direction, index) => {
+      let iconComponent;
 
+      switch (direction.maneuver) {
+        case 'turn-slight-left':
+  case 'turn-sharp-left':
+  case 'uturn-left':
+  case 'turn-left':
+  case 'ramp-left':
+  case 'fork-left':
+  case 'roundabout-left':
+          iconComponent = 'pi pi-arrow-left'
+          break;
+
+          case 'turn-slight-right':
+            case 'turn-sharp-right':
+            case 'uturn-right':
+            case 'turn-right':
+            case 'ramp-right':
+            case 'fork-right':
+            case 'roundabout-right':
+          iconComponent = 'pi pi-arrow-right'
+          break;
+
+        default:
+          iconComponent = 'pi pi-arrow-up'
+          break;
+      }
+
+      return (
+        <div key={index} className='w-full h-auto text-4xl'>
+          <i className={iconComponent}></i>
+          <span
+        key={index}
+        className='w-full h-auto text-3xl'
+        dangerouslySetInnerHTML={{ __html: direction.instructions }}
+      ></span>
+        </div>
+      );
+    })
+  )
+    }
     </>
-   )
+    )
 }
+    </div>
 
+  </div>
+  }
+</>
+)
+}
 export default App

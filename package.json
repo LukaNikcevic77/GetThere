@@ -7,10 +7,23 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+<<<<<<< HEAD
+    "preview": "vite preview",
+    "clean-git": "rm -rf .git/objects",
+    "fetch": "git fetch origin",
+    "check-repo": "git fsck --full"
+
+  },
+  
+  "dependencies": {
+    "@react-google-maps/api": "^2.19.2",
+    "primeicons": "^6.0.1",
+=======
     "preview": "vite preview"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.19.2",
+>>>>>>> origin/main
     "primereact": "^10.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
