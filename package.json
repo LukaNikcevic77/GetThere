@@ -13,6 +13,7 @@
     "check-repo": "git fsck --full"
 
   },
+  
   "dependencies": {
     "@react-google-maps/api": "^2.19.2",
     "primeicons": "^6.0.1",
