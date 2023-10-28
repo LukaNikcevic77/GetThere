@@ -190,7 +190,9 @@ useEffect(()=> {
   
 }, [currentEndValidAddress])
 
-
+useEffect(() => {
+  console.log(directions);
+}, [])
 
   const getRoute = async () => {
     const direcitonsReferenta = new google.maps.DirectionsRenderer();
@@ -214,15 +216,15 @@ useEffect(()=> {
         }
 
         )
+        setDirections(results);
         direcitonsReferenta.setDirections(results);
         direcitonsReferenta.setMap(newMap);
+        
       
       direcitonsRef.current.context = newMap;
       direcitonsRef.current = direcitonsReferenta;
 
-    
-    setCenter(currentStartAddressMarker);
-    setDirections(results);
+      setCenter(currentStartAddressMarker);
   }
     catch(error) {
       console.log(error.message);
@@ -265,6 +267,8 @@ useEffect(()=> {
    
   }
   
+  
+
   const getLocationGeocode = async(a) => {
     console.log(a);
       const geocodeResults = await getGeocode({address: a});
@@ -287,142 +291,137 @@ useEffect(()=> {
   
   
 
-   return(
-    <>
-    
+   return (
+    <> 
     {isLoaded &&
-    <div className='bg-slate-500 h-full desktop:flex'>
-      <ToastContainer
-position="top-center"
-autoClose={2000}
-hideProgressBar={false}
-newestOnTop={false}
-closeOnClick
-rtl={false}
-pauseOnFocusLoss
-draggable
-pauseOnHover
-theme="dark"
-/>
-
-<GoogleMap ref={mapReference} zoom={10} center={center} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
-
-{directions !== null && <DirectionsRenderer ref={direcitonsRef}/>}
-
-      {markers.map((position, index) => (
-        <Marker key={index} position={position} />
+      <div className='bg-slate-500 h-full desktop:flex'>
+        <ToastContainer
+  position="top-center"
+  autoClose={2000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="dark"
+  />
+  
+  <GoogleMap ref={mapReference} zoom={10} center={center} mapContainerClassName='h-3/5 w-full desktop:h-full desktop:w-3/5 desktop:order-2'>
+  {directions !== null && <DirectionsRenderer ref={direcitonsRef}/>}
+        {markers.map((position, index) => (
+          <Marker key={index} position={position} />
+          
+        ))}
+        {currentStartAddressMarker && <Marker position={currentStartAddressMarker}/>}
+        {currentEndAddressMarker && <Marker position={currentEndAddressMarker}/>}
+  
+  
+  
+      </GoogleMap>
+      
+  
+      <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
+      desktop:h-full desktop:w-2/5'>
+        <h1 className='text-3xl pt-5
+        tablet:text-5xl '>GetThere</h1>
+     {directions === null ? (
+      <>
+      <Autocomplete onPlaceChanged={onStartChanged} onLoad={onStartLoad} >
+  <InputText className='p-2 text-xl
+   sm:text-md
+   tablet:text-xl tablet:w-auto tablet:p-6'
+   onChange={(e) => setTypedValueStart(e.target.value)}
+  />
+  </Autocomplete>
+  <Autocomplete onPlaceChanged={onEndChanged} onLoad={onEndLoad}>
+  
+  <InputText  className='p-2 text-xl
+   sm:text-md
+   tablet:text-xl tablet:w-auto tablet:p-6' 
+   onChange={(e) => setTypedValueEnd(e.target.value)}
+   />
+  </Autocomplete>
+      {wayPointsArray.map((waypoint) => (
+      <span key={waypoint.id}>
         
-      ))}
-      {currentStartAddressMarker && <Marker position={currentStartAddressMarker}/>}
-      {currentEndAddressMarker && <Marker position={currentEndAddressMarker}/>}
-
-    
-
-</GoogleMap>
-    
-
-    <div className='h-2/5 w-full flex flex-col items-center justify-start gap-4 bg-green-600 overflow-y-auto
-    desktop:h-full desktop:w-2/5'>
-      <h1 className='text-3xl pt-5
-      tablet:text-5xl '>GetThere</h1>
-
-   {directions === null ? (
-    <>
-
-    <Autocomplete onPlaceChanged={onStartChanged} onLoad={onStartLoad} >
-<InputText className='p-2 text-xl
- sm:text-md
- tablet:text-xl tablet:w-auto tablet:p-6'
- onChange={(e) => setTypedValueStart(e.target.value)}
-/>
-</Autocomplete>
-<Autocomplete onPlaceChanged={onEndChanged} onLoad={onEndLoad}>
-
-<InputText  className='p-2 text-xl
- sm:text-md
- tablet:text-xl tablet:w-auto tablet:p-6' 
- onChange={(e) => setTypedValueEnd(e.target.value)}
- />
-</Autocomplete>
-    {wayPointsArray.map((waypoint) => (
-    <span key={waypoint.id}>
-
-    <Autocomplete>
-
-<LocationInput wayPointsArray={wayPointsArray} setWayPointsArray={setWayPointsArray} removeStop={removeStop} id={waypoint.id}/>
-</Autocomplete>
-    </span>
-))}
-    <Button label="Add stop" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xs -ml-20 
-    sm:-mt-1 
-    tablet:text-3xl tablet:py-8' 
-    onClick={addStop} /> 
-    <Button label="View Route" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xl
-     sm:-mt-3 
-     md:mt-20 md:-mt-0
-     tablet:text-4xl tablet:py-10' 
-     disabled={canGetDirections} onClick={getRoute} />     
-    
-    </> )
-    : 
-    (
-    <>
-    <Button label="New directions" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xs -ml-20 
-    sm:-mt-1 
-    tablet:text-3xl tablet:py-8' 
-    onClick={() => window.location.reload()} /> 
-    {directions.routes &&
-  directions.routes[0].legs.map((step, stepIndex) =>
-    step.steps.map((direction, index) => {
-      let iconComponent;
-
-      switch (direction.maneuver) {
-        case 'turn-slight-left':
-  case 'turn-sharp-left':
-  case 'uturn-left':
-  case 'turn-left':
-  case 'ramp-left':
-  case 'fork-left':
-  case 'roundabout-left':
-          iconComponent = 'pi pi-arrow-left'
-          break;
-
-          case 'turn-slight-right':
-            case 'turn-sharp-right':
-            case 'uturn-right':
-            case 'turn-right':
-            case 'ramp-right':
-            case 'fork-right':
-            case 'roundabout-right':
-          iconComponent = 'pi pi-arrow-right'
-          break;
-
-        default:
-          iconComponent = 'pi pi-arrow-up'
-          break;
-      }
-
-      return (
-        <div key={index} className='w-full h-auto text-4xl'>
-          <i className={iconComponent}></i>
-          <span
-        key={index}
-        className='w-full h-auto text-3xl'
-        dangerouslySetInnerHTML={{ __html: direction.instructions }}
-      ></span>
-        </div>
-      );
-    })
-  )
-    }
-    </>
+      <Autocomplete>
+  
+  <LocationInput wayPointsArray={wayPointsArray} setWayPointsArray={setWayPointsArray} removeStop={removeStop} id={waypoint.id}/>
+  </Autocomplete>
+      </span>
+  ))}
+      <Button label="Add stop" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xs -ml-20 
+      sm:-mt-1 
+      tablet:text-3xl tablet:py-8' 
+      onClick={addStop} /> 
+      <Button label="View Route" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xl
+       sm:-mt-3 
+       md:mt-20 md:-mt-0
+       tablet:text-4xl tablet:py-10' 
+       disabled={canGetDirections} onClick={getRoute} />     
+      
+      </> )
+      : 
+      (
+      <>
+      <Button label="New directions" severity="info" rounded className='bg-blue-500 text-white h-6 w-auto px-10 py-5 text-xs -ml-20 
+      sm:-mt-1 
+      tablet:text-3xl tablet:py-8' 
+      onClick={() => window.location.reload()} /> 
+      {directions.routes &&
+    directions.routes[0].legs.map((step, stepIndex) =>
+      step.steps.map((direction, index) => {
+        let iconComponent;
+  
+        switch (direction.maneuver) {
+          case 'turn-slight-left':
+    case 'turn-sharp-left':
+    case 'uturn-left':
+    case 'turn-left':
+    case 'ramp-left':
+    case 'fork-left':
+    case 'roundabout-left':
+            iconComponent = 'pi pi-arrow-left'
+            break;
+  
+            case 'turn-slight-right':
+              case 'turn-sharp-right':
+              case 'uturn-right':
+              case 'turn-right':
+              case 'ramp-right':
+              case 'fork-right':
+              case 'roundabout-right':
+            iconComponent = 'pi pi-arrow-right'
+            break;
+  
+          default:
+            iconComponent = 'pi pi-arrow-up'
+            break;
+        }
+  
+        return (
+          <div key={index} className='w-full h-auto text-4xl'>
+            <i className={iconComponent}></i>
+            <span
+          key={index}
+          className='w-full h-auto text-3xl'
+          dangerouslySetInnerHTML={{ __html: direction.instructions }}
+        ></span>
+          </div>
+        );
+      })
     )
-}
-    </div>
-
-  </div>
+      }
+      </>
+      )
   }
-</>
-)
-}
+      </div>
+  
+    </div>
+    }
+  </>
+  )
+  }
 export default App
