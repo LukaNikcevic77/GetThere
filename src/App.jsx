@@ -348,7 +348,7 @@ function App() {
                 </Autocomplete>
                 {wayPointsArray.map((waypoint) => (
                   <span key={waypoint.id}>
-                    <Autocomplete>
+                    <Autocomplete className="text-black">
                       <LocationInput
                         wayPointsArray={wayPointsArray}
                         setWayPointsArray={setWayPointsArray}
