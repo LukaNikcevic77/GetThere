@@ -4,12 +4,8 @@
 - Regulate map fetching and its scalability with layout
 - Add buttons and their functionality
 - Add functionality of the map (Markers being put down)
-- Add transition animations
-- Do restyling (OPTIONAL)
-- Add markers for inputs
 
 #### Next on todo
-- Add choosing different options by time, by length and by transport (OPTIONAL)
 
 
 ## Done
@@ -20,3 +16,7 @@
 - Add markers for inputs
 - Add directions and its display
 - Add functionality for transition between choosing destination and directions
+- Add choosing different options by time, by length and by transport (OPTIONAL)
+- Add markers for inputs
+- Do restyling (OPTIONAL)
+- Add transition animations
