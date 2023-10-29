@@ -9,9 +9,8 @@
 - Add markers for inputs
 
 #### Next on todo
-- Add functionality for transition between choosing destination and directions
 - Add choosing different options by time, by length and by transport (OPTIONAL)
-- Add posibility to change route if allready calculated 
+
 
 ## Done
 - Get down initial layout 
@@ -20,3 +19,4 @@
 - Add form verification for input buttons
 - Add markers for inputs
 - Add directions and its display
+- Add functionality for transition between choosing destination and directions
