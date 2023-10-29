@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { GoogleMap, useLoadScript, Autocomplete, DirectionsRenderer, Marker} from '@react-google-maps/api';
 import { InputText } from 'primereact/inputtext';
 import {RadioButton} from 'primereact/radiobutton'
-
+import {ProgressSpinner} from 'primereact/progressspinner'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getGeocode, getLatLng } from 'use-places-autocomplete';
@@ -57,6 +57,18 @@ const [currentEndAddressMarker, setCurrentEndAddresMarker] = useState(null);
           break;
 
     }
+  }
+
+  function Loading() {
+    return (
+      <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-600 animated slideInDown">
+        <div className="text-center">
+        <ProgressSpinner style={{ width: '100px', height: '100px' }} strokeWidth="5" animationDuration="2s" />
+          
+          <div className="spinner text-xl text-white">Loading...</div>
+        </div>
+      </div>
+    );
   }
 
 function onStartLoad(autocomplete) {
@@ -296,7 +308,7 @@ useEffect(() => {
 
    return (
     <> 
-    
+    {!isLoaded && <Loading />}
     {isLoaded &&
       <div className='bg-slate-500 h-full desktop:flex text-white'>
         <ToastContainer
