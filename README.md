@@ -1,4 +1,4 @@
-# Bitter
+# Get There
  
 
 ###  App to find optimised route to your destination
@@ -11,7 +11,7 @@ This webpage was made to be responsive on using mobile first design and tailwind
 ###  How to run app !!!
 
   **Testing the app production build without changing code**
-  # Clone the project from production-build
+  # Clone the project from production-build branch
 ```
 cd <project_name>
 npm install -g http-server
